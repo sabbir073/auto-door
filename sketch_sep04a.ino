@@ -1,40 +1,69 @@
-int input1 = A3; //input pin for switch and signal module
-int output1 = 11; // door close signal
-int output2 = 12; //door open signal
-int val = 0; //variable to calculate analogdata
-int led = 13;
-
-void setup() 
+byte sensorPin=A0, outputPin1=11, outputPin2=10, closeSwitch=9, openSwitch=8, controlPin=7;
+int sensorRead=0, outputRead1=0, outputRead2=0, closeRead=0, openRead=0, control=0;
+int in1=0, dtime=5000;
+int in=0;
+void setup()
 {
-  Serial.begin(9600); // declared serial
-  pinMode(input1, INPUT); // set analogpin input mood as input
-  pinMode(output1, OUTPUT); // set door close signal as output
-  pinMode(output2, OUTPUT); //set door open signal as output
-  pinMode(led, OUTPUT);
-  digitalWrite(led, LOW);
+  pinMode(sensorPin, INPUT);
+  pinMode(outputPin1, OUTPUT);
+  pinMode(outputPin2, OUTPUT);
+  pinMode(closeSwitch, INPUT_PULLUP);
+  pinMode(openSwitch, INPUT_PULLUP);
+  pinMode(controlPin, INPUT_PULLUP);
+  pinMode(2, OUTPUT);
+  digitalWrite(2, LOW);
+}
+void loop()
+{
+  sensorRead=analogRead(sensorPin);
+  control=digitalRead(controlPin);
+  if(sensorRead<600 && in1==0 && in==0) 
+  {
+    delay(dtime);
+    openGate();
+    in1=1;
+  }
+  else if(sensorRead>600 && in1==1)
+  {
+    closeGate();
+    in1=0;
+  }
+
+  if(control==0 && in==0)
+  {
+    delay(200);
+    openGate();
+    in=1;
+  }
+  else if(control==0 && in==1)
+  {
+    delay(200);
+    closeGate();
+    in=0;
+  }
+ 
 }
 
-void loop() 
+void openGate()
 {
-  val = analogRead(input1); //reading the value of analog pin
-  Serial.println(val);
-  delay(50); // little delay to maintain signal
-  if(val > 500) //calculating analog value
-  {
-    digitalWrite(output2, LOW);
-    delay(50); //little delay to maintain signal
-    digitalWrite(output1, HIGH); //if analog pin sending signal turn on door close
-    delay(5000); //little delay to maintain signal
-    digitalWrite(output1, LOW);
-    delay(50); //little delay to maintain signal
-  }
-  else if (val < 500)
-  {
-    digitalWrite(output1, LOW);
-    delay(50); //little delay to maintain signal
-    digitalWrite(output2, HIGH); //if analog pin sending signal turn off door close
-    delay(5000); //little delay to maintain signal
-    digitalWrite(output2, LOW);
-    delay(50); //little delay to maintain signal
-  }
+  openRead=digitalRead(openSwitch);
+    while(openRead==HIGH) 
+    {
+      digitalWrite(outputPin1, HIGH),
+      digitalWrite(outputPin2, LOW);
+      openRead=digitalRead(openSwitch);
+    }
+    digitalWrite(outputPin1,LOW);
+}
+
+void closeGate()
+{
+  closeRead=digitalRead(closeSwitch);
+    while(closeRead==HIGH) 
+    {
+      digitalWrite(outputPin1, LOW),
+      digitalWrite(outputPin2, HIGH);
+      closeRead=digitalRead(closeSwitch);
+    }
+    digitalWrite(outputPin2,LOW);
 }
